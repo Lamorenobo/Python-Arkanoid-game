@@ -6,7 +6,7 @@ pygame.init()
 #inicializa el modulo para la musica
 pygame.mixer.init()
 
-pygame.mixer.music.load('')
+pygame.mixer.music.load('background_music.mp3')
 pygame.mixer.music.play(-1)
 pygame.mixer.music.set_volume(0.3)
 #se carga la musica de fondo y se reproduce en bucle infinito
@@ -15,8 +15,11 @@ pygame.mixer.music.set_volume(0.3)
 sonido_barra= pygame.mixer.Sound('bounce.mp3')
 sonido_barra.set_volume(0.5)
 
-sonido_game_over= pygame.mixer.Sound()
+sonido_game_over= pygame.mixer.Sound('gameOver.mp3')
+sonido_game_over.set_volume(1)
 
+sonido_win= pygame.mixer.Sound('win.mp3')
+sonido_win.set_volume(1)
 #ancho y alto de la ventana
 width, height = 800,600
 #Colores en RGB
@@ -34,7 +37,7 @@ b_ventana_h = 8
 vel_balon = 5
 
 #dimensiones de la barra
-barrita_w = 100
+barrita_w = 130
 barrita_h = 10
 
 #ladrillos
@@ -117,6 +120,7 @@ def rebotes_balon():
 
     #si el balon esta en el filo inferior se acaba el juego
     if pos_balon[1] >= height:
+        sonido_game_over.play()
         return True #para que el juego termine
 
     #ahora los puntos 
@@ -189,7 +193,7 @@ def ganador():
     text_rect = texto_inicio.get_rect(center=(width // 2, height // 2))
     # Dibuja el texto en la pantalla
     ventana.blit(texto_inicio, text_rect)
-    
+    sonido_win.play()
     pygame.display.update()  # Actualiza la pantalla
 
     # Espera a que se presione la tecla
@@ -220,8 +224,22 @@ while not game_over:
         pygame.time.wait(800) 
         espera = False
 
-    if len(ladrillos)== 0:
+    # Comprobar si todas las filas de ladrillos están vacías
+    todas_filas_vacias = True  # Asumimos que todas las filas están vacías al inicio
+    for fila in ladrillos:
+        if len(fila) > 0:  # Si encontramos una fila que no esté vacía
+            todas_filas_vacias = False  # Cambiamos la variable porque aún hay ladrillos
+            break  # No es necesario seguir revisando, ya sabemos que no están todas vacías
+
+    # Si todas las filas estaban vacías, significa que el jugador ha ganado
+    if todas_filas_vacias:
+        # Detener la música de fondo
+        pygame.mixer.music.stop()
+        # Llamar a la función que muestra la pantalla de ganador
         ganador()
+        # Detener el ciclo principal del juego
+        break
+
     keys = pygame.key.get_pressed()
     
     if keys[pygame.K_LEFT]:
